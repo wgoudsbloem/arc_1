@@ -13,6 +13,8 @@ pipelines:
           - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
           - cd "${PACKAGE_PATH}"
           #- go get -v
+          - ls
+          - pwd
           - export GOPATH=$(pwd)
           - go build -v ./...
           - go test -v ./...
