@@ -12,7 +12,8 @@ pipelines:
           - mkdir -pv "${PACKAGE_PATH}"
           - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${GOPATH}/src"
           - cd "${GOPATH}"
-          - ls /go
+          - export GOROOT=
+          - ls /go/src/arcessio/cli
           #- go get -v
-          #- go build -v ./...
+          - go build -v ./...
           - go test -v ./...
