@@ -15,6 +15,6 @@ pipelines:
           #- go get -v
           - ls
           - pwd
-          - export GOPATH=$(pwd)
+          - echo $GOPATH
           - go build -v ./...
           - go test -v ./...
