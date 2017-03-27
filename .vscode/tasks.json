@@ -11,7 +11,10 @@
             "-v", "./..."
         ]},
         {"taskName": "test", "isTestCommand": true,  "args": [
-           "-v", "./..."
+           "-v", "-cover","./..."
+        ]},
+        {"taskName": "vet", "args": [
+            "./..."
         ]}
     ]
 }

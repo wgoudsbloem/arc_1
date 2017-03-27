@@ -40,7 +40,7 @@ func NewWriter(ws io.WriteSeeker) Writer {
 }
 
 // WriteByte will write a byte to the stream
-func (sw *Writer) WriteByte(jsn []byte) (offset int64, err error) {
+func (sw *Writer) WriteByteArray(jsn []byte) (offset int64, err error) {
 	if err = sw.Encode(jsn); err != nil {
 		return
 	}
@@ -49,7 +49,7 @@ func (sw *Writer) WriteByte(jsn []byte) (offset int64, err error) {
 	return
 }
 
-// NewReader is a factory to get a REader
+// NewReader is a factory to get a Reader
 func NewReader(rs ReadAtSeeker, offset int64) Reader {
 	if _, err := rs.Seek(offset, io.SeekStart); err != nil {
 		panic(err)

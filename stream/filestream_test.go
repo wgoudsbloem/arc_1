@@ -22,7 +22,7 @@ func TestNewFileStreamWriter(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	offset, err := sw.WriteByte(expectedValue1)
+	offset, err := sw.WriteByteArray(expectedValue1)
 	if err != nil {
 		t.Error(err)
 	}
@@ -30,7 +30,7 @@ func TestNewFileStreamWriter(t *testing.T) {
 		t.Errorf("expected offset to be %v, but got %v", 1, offset)
 	}
 	//t.Logf("write file offset: %v", offset)
-	offset, err = sw.WriteByte(expectedValue2)
+	offset, err = sw.WriteByteArray(expectedValue2)
 	if err != nil {
 		t.Error(err)
 	}
@@ -39,7 +39,7 @@ func TestNewFileStreamWriter(t *testing.T) {
 	}
 	//t.Logf("write file offset: %v", offset)
 	lastOffset = offset
-	offset, err = sw.WriteByte(expectedValue3)
+	offset, err = sw.WriteByteArray(expectedValue3)
 	if err != nil {
 		t.Error(err)
 	}
@@ -102,7 +102,7 @@ func TestFileLastJson(t *testing.T) {
 		t.Fatal(err)
 	}
 	expVal := []byte(`{"test","val"}`)
-	srw.WriteByte(expVal)
+	srw.WriteByteArray(expVal)
 	b, _, err := srw.LastJSON()
 	if err != nil {
 		t.Error(err)

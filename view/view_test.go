@@ -34,7 +34,7 @@ func TestCreateCustomerTopic(t *testing.T) {
 			f = f * -1
 		}
 		expectedTotal = expectedTotal + f
-		sw.WriteByte([]byte(fmt.Sprintf(`{"name":"john", "second":"mnbvcxzlkjhgfdsapoiuytrewq", "acct":%v}`, f)))
+		sw.WriteByteArray([]byte(fmt.Sprintf(`{"name":"john", "second":"mnbvcxzlkjhgfdsapoiuytrewq", "acct":%v}`, f)))
 	}
 }
 
@@ -62,10 +62,10 @@ func TestNewViewer(t *testing.T) {
 		t.Fatal("expect viewer not to be nil")
 	}
 	if viewer.schema.ID != expectedID {
-		t.Error("expected id to be %v, but got %v", expectedID, viewer.schema.ID)
+		t.Errorf("expected id to be %v, but got %v", expectedID, viewer.schema.ID)
 	}
 	if viewer.schema.Topic != expectedTopic {
-		t.Error("expected topic to be %v, but got %v", expectedTopic, viewer.schema.Topic)
+		t.Errorf("expected topic to be %v, but got %v", expectedTopic, viewer.schema.Topic)
 	}
 }
 

@@ -98,7 +98,7 @@ func use(topic string) (cmd command, err error) {
 				s = msgPutFailInvalidJSON
 				return
 			}
-			offset, err := fs.WriteByte([]byte(n[1]))
+			offset, err := fs.WriteByteArray([]byte(n[1]))
 			if err != nil {
 				return err.Error()
 			}

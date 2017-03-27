@@ -32,7 +32,7 @@ func (bb *ByteBuffer) Seek(offset int64, whence int) (int64, error) {
 func TestWriteByte(t *testing.T) {
 	bb := ByteBuffer{}
 	sw := NewWriter(&bb)
-	offset, err := sw.WriteByte([]byte(`{"key":"value"}`))
+	offset, err := sw.WriteByteArray([]byte(`{"key":"value"}`))
 	if err != nil {
 		t.Error(err)
 	}
@@ -45,7 +45,7 @@ func TestWriteByte(t *testing.T) {
 func TestReadJson(t *testing.T) {
 	bb := ByteBuffer{}
 	sw := NewWriter(&bb)
-	_, err := sw.WriteByte([]byte(`{"key":"value"}`))
+	_, err := sw.WriteByteArray([]byte(`{"key":"value"}`))
 	if err != nil {
 		t.Error(err)
 	}
@@ -71,7 +71,7 @@ func TestSubscribe(t *testing.T) {
 		return nil
 	}
 	sw.Subscribe(fn)
-	_, err := sw.WriteByte([]byte(`{"key":"value"}`))
+	_, err := sw.WriteByteArray([]byte(`{"key":"value"}`))
 	if err != nil {
 		t.Error(err)
 	}
@@ -82,7 +82,7 @@ func TestLastJson(t *testing.T) {
 	var b0 bytes.Buffer
 	bb2 := ByteBuffer{b: b0}
 	sw := NewWriter(&bb2)
-	_, err := sw.WriteByte([]byte(exp0))
+	_, err := sw.WriteByteArray([]byte(exp0))
 	if err != nil {
 		t.Error(err)
 	}
@@ -96,7 +96,7 @@ func TestLastJson(t *testing.T) {
 	}
 	//write another entry
 	exp2 := `{"key1":"value2"}`
-	_, err = sw.WriteByte([]byte(exp2))
+	_, err = sw.WriteByteArray([]byte(exp2))
 	if err != nil {
 		t.Error(err)
 	}
