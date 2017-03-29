@@ -2,7 +2,11 @@ package store
 
 import (
 	"bytes"
+	"io/ioutil"
+	"os"
+	"strings"
 	"testing"
+	"time"
 )
 
 type TestSeeker struct {
@@ -75,6 +79,42 @@ func TestGet(t *testing.T) {
 	}
 }
 
+func TestStorer(t *testing.T) {
+	var w TestSeeker
+	s := NewStorer(&w)
+	_, ok := s.(Storer)
+	if !ok {
+		t.Error("Type is not a Storer")
+	}
+}
+
+func TestFileStorer(t *testing.T) {
+	fn := "test"
+	s := NewFileStorer(fn)
+	_, ok := s.(Storer)
+	if !ok {
+		t.Error("Type is not a Storer")
+	}
+	in1 := []byte(`{"test":"value"}`)
+	_, err := s.Put(in1)
+	if err != nil {
+		t.Error(err)
+	}
+	time.Sleep(3 * time.Second)
+	_, err = ioutil.ReadFile(fn + ".topic")
+	if err != nil {
+		t.Error(err)
+	}
+	s2 := NewFileStorer(fn)
+	p, err := s2.Get()
+	if err != nil {
+		t.Error(err)
+	}
+	if string(in1) != string(p) {
+		t.Errorf("want %v got %v", string(in1), string(p))
+	}
+}
+
 func TestInternalLastEntry(t *testing.T) {
 	expVal1 := `{"test1":"val1"}`
 	expVal2 := `{"test2":"val2"}`
@@ -88,5 +128,17 @@ func TestInternalLastEntry(t *testing.T) {
 	res2 := lastEntry([]byte(testVal3))
 	if string(res2) != expVal2 {
 		t.Errorf("want: '%v' got: '%v'", expVal2, string(res2))
+	}
+}
+
+func TestCleanup(t *testing.T) {
+	fi, err := ioutil.ReadDir("./")
+	if err != nil {
+		t.Error(err)
+	}
+	for _, f := range fi {
+		if strings.HasSuffix(f.Name(), ".topic") {
+			os.Remove(f.Name())
+		}
 	}
 }

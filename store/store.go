@@ -3,10 +3,12 @@ package store
 import (
 	"bytes"
 	"io"
+	"os"
 )
 
 type Storer interface {
 	Put(p []byte) (offset int64, err error)
+	Get() (p []byte, err error)
 }
 
 type ReadAtWriteSeeker interface {
@@ -19,13 +21,21 @@ type store struct {
 	end    int64
 }
 
-// func NewStorer(ws io.WriteSeeker) Storer {
-// 	e, err := ws.Seek(0, io.SeekEnd)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	return store{ws, e}
-// }
+func NewStorer(rw ReadAtWriteSeeker) Storer {
+	e, err := rw.Seek(0, io.SeekEnd)
+	if err != nil {
+		panic(err)
+	}
+	return &store{rw, e}
+}
+
+func NewFileStorer(topic string) Storer {
+	f, err := os.OpenFile(topic+".topic", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+	if err != nil {
+		panic(err)
+	}
+	return &store{stream: f}
+}
 
 func (s *store) Put(p []byte) (offset int64, err error) {
 	p = append(p, '\n')
