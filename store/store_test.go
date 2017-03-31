@@ -1,6 +1,7 @@
 package store
 
 import (
+	"arcessio/pubsub"
 	"bytes"
 	"io/ioutil"
 	"os"
@@ -9,15 +10,15 @@ import (
 	"time"
 )
 
-type TestSeeker struct {
+type TestStream struct {
 	bytes.Buffer
 }
 
-func (t *TestSeeker) Seek(offset int64, whence int) (int64, error) {
+func (t *TestStream) Seek(offset int64, whence int) (int64, error) {
 	return int64(t.Len()), nil
 }
 
-func (t *TestSeeker) ReadAt(p []byte, off int64) (n int, err error) {
+func (t *TestStream) ReadAt(p []byte, off int64) (n int, err error) {
 	return t.Read(p)
 }
 
@@ -26,8 +27,8 @@ func TestPut(t *testing.T) {
 	in1 := "teststring"
 	in2 := "teststring2"
 	exp := in1 + "\n" + in2 + "\n"
-	var bb TestSeeker
-	s := store{&bb, 0}
+	var bb TestStream
+	s := store{stream: &bb}
 	_, err := s.Put([]byte(in1))
 	if err != nil {
 		t.Error(err)
@@ -49,8 +50,8 @@ func TestPut(t *testing.T) {
 func TestGet(t *testing.T) {
 	in1 := "teststring"
 	in2 := "teststring2"
-	var bb TestSeeker
-	s := store{&bb, 0}
+	var bb TestStream
+	s := store{stream: &bb}
 	_, err := s.Put([]byte(in1))
 	if err != nil {
 		t.Error(err)
@@ -69,7 +70,7 @@ func TestGet(t *testing.T) {
 	if string(b) == in2 {
 		t.Errorf("want %v got %v", in1, string(b))
 	}
-	s2 := store{&bb, offset}
+	s2 := store{stream: &bb, end: offset}
 	b2, err := s2.Get()
 	if err != nil {
 		t.Error(err)
@@ -80,7 +81,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestStorer(t *testing.T) {
-	var w TestSeeker
+	var w TestStream
 	s := NewStorer(&w)
 	_, ok := s.(Storer)
 	if !ok {
@@ -113,6 +114,38 @@ func TestFileStorer(t *testing.T) {
 	if string(in1) != string(p) {
 		t.Errorf("want %v got %v", string(in1), string(p))
 	}
+}
+
+type MockPubSub struct {
+	t *testing.T
+}
+
+func (m *MockPubSub) Subscribe(fn pubsub.Subscriber) {
+
+}
+
+func (m *MockPubSub) Notify(in interface{}) {
+	if _, ok := in.(Storer); !ok {
+		m.t.Error("want Storer got something else...")
+	}
+}
+
+func TestSubscribe(t *testing.T) {
+	in1 := "teststring"
+	in2 := "teststring2"
+	var bb TestStream
+	s := store{stream: &bb}
+	s.PubSub = &MockPubSub{t}
+	s.Subscribe(func(in interface{}) (err error) { return nil })
+	_, err := s.Put([]byte(in1))
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = s.Put([]byte(in2))
+	if err != nil {
+		t.Error(err)
+	}
+
 }
 
 func TestInternalLastEntry(t *testing.T) {

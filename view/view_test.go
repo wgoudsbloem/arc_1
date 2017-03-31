@@ -18,7 +18,10 @@ var (
 	expectedTotal float64
 )
 
-var customers = []string{`{"name":"john", "acct":100}`, `{"name":"john", "acct":-50}`, `{"name":"john", "acct":25}`}
+var customers = []string{
+	`{"name":"john", "acct":100}`,
+	`{"name":"john", "acct":-50}`,
+	`{"name":"john", "acct":25}`}
 
 func TestCreateCustomerTopic(t *testing.T) {
 	sw, err := stream.NewFileStreamWriter("customer")

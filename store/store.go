@@ -1,6 +1,7 @@
 package store
 
 import (
+	"arcessio/pubsub"
 	"bytes"
 	"io"
 	"os"
@@ -9,6 +10,7 @@ import (
 type Storer interface {
 	Put(p []byte) (offset int64, err error)
 	Get() (p []byte, err error)
+	pubsub.Subscriberer
 }
 
 type ReadAtWriteSeeker interface {
@@ -19,6 +21,7 @@ type ReadAtWriteSeeker interface {
 type store struct {
 	stream ReadAtWriteSeeker
 	end    int64
+	pubsub.PubSub
 }
 
 func NewStorer(rw ReadAtWriteSeeker) Storer {
@@ -26,7 +29,10 @@ func NewStorer(rw ReadAtWriteSeeker) Storer {
 	if err != nil {
 		panic(err)
 	}
-	return &store{rw, e}
+	s := &store{stream: rw, end: e}
+	s.PubSub = &pubsub.PubSuber{}
+	return s
+
 }
 
 func NewFileStorer(topic string) Storer {
@@ -45,6 +51,9 @@ func (s *store) Put(p []byte) (offset int64, err error) {
 	}
 	s.end += int64(n)
 	offset = s.end
+	if s.PubSub != nil {
+		s.Notify(s)
+	}
 	return
 }
 

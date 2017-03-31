@@ -7,10 +7,18 @@ import (
 // ErrSubscriberFailed is an error that can be handled
 var ErrSubscriberFailed = errors.New("the subscriber could not be notfied")
 
+type Subscriberer interface {
+	Subscribe(fn Subscriber)
+}
+
+type Notifier interface {
+	Notify(in interface{})
+}
+
 // PubSub is the interface for this package
 type PubSub interface {
-	Subscribe(fn Subscriber)
-	Notify(in interface{})
+	Subscriberer
+	Notifier
 }
 
 // Subscriber is the function that will be executed when Notify is called

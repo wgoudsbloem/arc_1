@@ -2,6 +2,8 @@ package stream
 
 import (
 	"bytes"
+	"io"
+	"io/ioutil"
 	"testing"
 )
 
