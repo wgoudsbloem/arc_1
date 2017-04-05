@@ -29,15 +29,19 @@ func TestPut(t *testing.T) {
 	exp := in1 + "\n" + in2 + "\n"
 	var bb TestStream
 	s := store{stream: &bb}
-	_, err := s.Put([]byte(in1))
+	var bbin1 bytes.Buffer
+	bbin1.WriteString(in1)
+	_, err := s.Put(&bbin1)
 	if err != nil {
 		t.Error(err)
 	}
-	offset, err := s.Put([]byte(in2))
+	var bbin2 bytes.Buffer
+	bbin2.WriteString(in2)
+	offset, err := s.Put(&bbin2)
 	if err != nil {
 		t.Error(err)
 	}
-	expLen := int64(len(exp))
+	expLen := int64(len(in1) + len("\n"))
 	if offset != expLen {
 		t.Errorf("want %v, got %v", expLen, offset)
 	}
@@ -52,31 +56,37 @@ func TestGet(t *testing.T) {
 	in2 := "teststring2"
 	var bb TestStream
 	s := store{stream: &bb}
-	_, err := s.Put([]byte(in1))
+	var bbin1 bytes.Buffer
+	bbin1.WriteString(in1)
+	_, err := s.Put(&bbin1)
 	if err != nil {
 		t.Error(err)
 	}
-	offset, err := s.Put([]byte(in2))
+	var bbin2 bytes.Buffer
+	bbin2.WriteString(in2)
+	offset, err := s.Put(&bbin2)
 	if err != nil {
 		t.Error(err)
 	}
-	b, err := s.Get()
+	var bbout1 bytes.Buffer
+	err = s.Get(&bbout1)
 	if err != nil {
 		t.Error(err)
 	}
-	if string(b) != in1 {
-		t.Errorf("want %v got %v", in1, string(b))
+	if bbout1.String() != in1 {
+		t.Errorf("want %v got %v", in1, bbout1.String())
 	}
-	if string(b) == in2 {
-		t.Errorf("want %v got %v", in1, string(b))
+	if bbout1.String() == in2 {
+		t.Errorf("want %v got %v", in1, bbout1.String())
 	}
 	s2 := store{stream: &bb, end: offset}
-	b2, err := s2.Get()
+	var bbout2 bytes.Buffer
+	err = s2.Get(&bbout2)
 	if err != nil {
 		t.Error(err)
 	}
-	if string(b2) != in2 {
-		t.Errorf("want [%v] got [%v]", in2, string(b2))
+	if bbout2.String() != in2 {
+		t.Errorf("want [%v] got [%v]", in2, bbout2.String())
 	}
 }
 
@@ -96,8 +106,10 @@ func TestFileStorer(t *testing.T) {
 	if !ok {
 		t.Error("Type is not a Storer")
 	}
-	in1 := []byte(`{"test":"value"}`)
-	_, err := s.Put(in1)
+	in1 := `{"test":"value"}`
+	var bbin1 bytes.Buffer
+	bbin1.WriteString(in1)
+	_, err := s.Put(&bbin1)
 	if err != nil {
 		t.Error(err)
 	}
@@ -107,12 +119,13 @@ func TestFileStorer(t *testing.T) {
 		t.Error(err)
 	}
 	s2 := NewFileStorer(fn)
-	p, err := s2.Get()
+	var bbout1 bytes.Buffer
+	err = s2.Get(&bbout1)
 	if err != nil {
 		t.Error(err)
 	}
-	if string(in1) != string(p) {
-		t.Errorf("want %v got %v", string(in1), string(p))
+	if string(in1) != bbout1.String() {
+		t.Errorf("want %v got %v", in1, bbout1.String())
 	}
 }
 
@@ -137,11 +150,15 @@ func TestSubscribe(t *testing.T) {
 	s := store{stream: &bb}
 	s.PubSub = &MockPubSub{t}
 	s.Subscribe(func(in interface{}) (err error) { return nil })
-	_, err := s.Put([]byte(in1))
+	var bbin1 bytes.Buffer
+	bbin1.WriteString(in1)
+	_, err := s.Put(&bbin1)
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = s.Put([]byte(in2))
+	var bbin2 bytes.Buffer
+	bbin2.WriteString(in2)
+	_, err = s.Put(&bbin2)
 	if err != nil {
 		t.Error(err)
 	}

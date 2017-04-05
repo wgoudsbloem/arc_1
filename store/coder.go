@@ -1,85 +1,43 @@
 package store
 
-import (
-	"bytes"
-	"encoding/base64"
-	"io"
-)
+import "encoding/base64"
 
 type Encoding struct {
-	e Encoder
+	Encoder
 }
 
-type Encoder interface {
-	Encode(b []byte)
-	io.Writer
+// Encoding
+type Encoder func(b []byte) (p []byte)
+
+func NewEncoder(e Encoding) Encoder {
+	return e.Encoder
 }
 
-func Newencoder(e Encoding) Encoder {
-	return e.e
+var NonEncoding = Encoding{func(b []byte) (p []byte) {
+	return b
+}}
+
+var Base64Encoding = Encoding{func(b []byte) (p []byte) {
+	base64.StdEncoding.Encode(p, b)
+	return
+}}
+
+// Decoding
+type Decoding struct {
+	d Decoder
 }
 
-var NonEncoding = Encoding{e: NewNonEncoder()}
-var Base64Encoding = Encoding{e: NewBase64Encoder()}
-
-func NewNonEncoder() *NonEncoder {
-	var bb bytes.Buffer
-	return &NonEncoder{&bb}
-}
-
-type NonEncoder struct {
-	io.Writer
-}
-
-func (ne *NonEncoder) Encode(b []byte) {
-	ne.Write(b)
-}
-
-func NewBase64Encoder() *Base64Encoder {
-	var bb bytes.Buffer
-	base64.NewEncoder(base64.StdEncoding, &bb)
-	return &Base64Encoder{&bb}
-}
-
-type Base64Encoder struct {
-	io.Writer
-}
-
-func (b64 *Base64Encoder) Encode(b []byte) {
-	b64.Write(b)
-}
-
-type Decoder interface {
-	Decode(b []byte)
-	io.Reader
-}
+type Decoder func(p []byte) (b []byte)
 
 func NewDecoder(d Decoding) Decoder {
 	return d.d
 }
 
-type Decoding struct {
-	d Decoder
-}
+var NonDecoding = Decoding{d: func(p []byte) (b []byte) {
+	return p
+}}
 
-var NonDecoding = Decoding{d: NewNonDecoder()}
-
-func NewNonDecoder() *NonDecoder {
-	return &NonDecoder{}
-}
-
-type NonDecoder struct {
-	io.Reader
-}
-
-func (n *NonDecoder) Decode(b []byte) {
-	for {
-		if _, err := n.Read(b); err != nil {
-			if err == io.EOF {
-				err = nil
-				return
-			}
-			return
-		}
-	}
-}
+var Base64Decoding = Decoding{d: func(p []byte) (b []byte) {
+	base64.StdEncoding.Decode(b, p)
+	return
+}}
