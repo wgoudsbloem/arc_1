@@ -48,3 +48,38 @@ type Base64Encoder struct {
 func (b64 *Base64Encoder) Encode(b []byte) {
 	b64.Write(b)
 }
+
+type Decoder interface {
+	Decode(b []byte)
+	io.Reader
+}
+
+func NewDecoder(d Decoding) Decoder {
+	return d.d
+}
+
+type Decoding struct {
+	d Decoder
+}
+
+var NonDecoding = Decoding{d: NewNonDecoder()}
+
+func NewNonDecoder() *NonDecoder {
+	return &NonDecoder{}
+}
+
+type NonDecoder struct {
+	io.Reader
+}
+
+func (n *NonDecoder) Decode(b []byte) {
+	for {
+		if _, err := n.Read(b); err != nil {
+			if err == io.EOF {
+				err = nil
+				return
+			}
+			return
+		}
+	}
+}
