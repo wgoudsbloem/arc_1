@@ -11,41 +11,46 @@ type Encoding struct {
 
 // Encoding
 type Encoder func(w io.Writer)
-type Encode func(w io.Writer) Encoder
+type Encode func(w io.Reader) Encoder
 
-func NewEncoder(e Encoding, w io.Writer) Encoder {
-	return e.Encode(w)
+func NewEncoder(e Encoding, r io.Reader) Encoder {
+	return e.Encode(r)
 }
 
-var NonEncoding = Encoding{func(w1 io.Writer) Encoder {
-	return func(w2 io.Writer) {
-		return
+var NonEncoding = Encoding{func(r io.Reader) Encoder {
+	return func(w io.Writer) {
+		io.Copy(w, r)
 	}
 }}
 
-var Base64Encoding = Encoding{func(w1 io.Writer) Encoder {
-	return func(w2 io.Writer) {
-		w2 = base64.NewEncoder(base64.StdEncoding, w1)
-		return
+var Base64Encoding = Encoding{func(r io.Reader) Encoder {
+	return func(w io.Writer) {
+		wout := base64.NewEncoder(base64.StdEncoding, w)
+		io.Copy(wout, r)
 	}
 }}
 
 // Decoding
 type Decoding struct {
-	d Decoder
+	Decode
 }
 
-type Decoder func(p []byte) (b []byte)
+type Decoder func(w io.Writer)
+type Decode func(w io.Reader) Decoder
 
-func NewDecoder(d Decoding) Decoder {
-	return d.d
+func NewDecoder(d Decoding, r io.Reader) Decoder {
+	return d.Decode(r)
 }
 
-var NonDecoding = Decoding{d: func(p []byte) (b []byte) {
-	return p
+var NonDecoding = Decoding{func(r io.Reader) Decoder {
+	return func(w io.Writer) {
+		io.Copy(w, r)
+	}
 }}
 
-var Base64Decoding = Decoding{d: func(p []byte) (b []byte) {
-	base64.StdEncoding.Decode(b, p)
-	return
+var Base64Decoding = Decoding{func(r io.Reader) Decoder {
+	return func(w io.Writer) {
+		rout := base64.NewDecoder(base64.StdEncoding, r)
+		io.Copy(w, rout)
+	}
 }}
