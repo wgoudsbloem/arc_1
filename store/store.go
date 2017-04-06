@@ -43,20 +43,6 @@ func NewFileStorer(topic string) Storer {
 	return &store{stream: f}
 }
 
-// func (s *store) Put(p []byte) (offset int64, err error) {
-// 	p = append(p, '\n')
-// 	n, err := s.stream.Write(p)
-// 	if err != nil {
-// 		return
-// 	}
-// 	s.end += int64(n)
-// 	offset = s.end
-// 	if s.PubSub != nil {
-// 		s.Notify(s)
-// 	}
-// 	return
-// }
-
 func (s *store) Put(r io.Reader) (index int64, err error) {
 	var bb bytes.Buffer
 	_, err = bb.ReadFrom(r)

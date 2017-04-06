@@ -1,25 +1,33 @@
 package store
 
-import "encoding/base64"
+import (
+	"encoding/base64"
+	"io"
+)
 
 type Encoding struct {
-	Encoder
+	Encode
 }
 
 // Encoding
-type Encoder func(b []byte) (p []byte)
+type Encoder func(w io.Writer)
+type Encode func(w io.Writer) Encoder
 
-func NewEncoder(e Encoding) Encoder {
-	return e.Encoder
+func NewEncoder(e Encoding, w io.Writer) Encoder {
+	return e.Encode(w)
 }
 
-var NonEncoding = Encoding{func(b []byte) (p []byte) {
-	return b
+var NonEncoding = Encoding{func(w1 io.Writer) Encoder {
+	return func(w2 io.Writer) {
+		return
+	}
 }}
 
-var Base64Encoding = Encoding{func(b []byte) (p []byte) {
-	base64.StdEncoding.Encode(p, b)
-	return
+var Base64Encoding = Encoding{func(w1 io.Writer) Encoder {
+	return func(w2 io.Writer) {
+		w2 = base64.NewEncoder(base64.StdEncoding, w1)
+		return
+	}
 }}
 
 // Decoding
